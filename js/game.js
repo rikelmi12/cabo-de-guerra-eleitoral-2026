@@ -148,6 +148,9 @@
         tInfo = 'Variação 1º ➔ 2º Turno: Migração de Votos (Lula +6,63 p.p. médios | Flávio +1,18 p.p.)';
       }
       $('mode-label').textContent = tInfo;
+      if (hovered && typeof showStateCard === 'function' && $('state-card') && !$('state-card').classList.contains('hidden')) {
+        showStateCard(hovered);
+      }
     }
   }
 
@@ -302,6 +305,9 @@
       log(prev === 'none'
         ? `🚩 ${NAMES[owner]} conquistou <b>${DATA.estados[uf].nome}</b>!`
         : `🔄 <b>${DATA.estados[uf].nome}</b> virou para ${NAMES[owner]}!`, owner);
+      if (navigator.vibrate) {
+        try { navigator.vibrate(mine ? [25, 35, 25] : 35); } catch (_) {}
+      }
       beep(mine ? 660 : 300, 0.12, 'triangle', 0.07);
       beep(mine ? 880 : 220, 0.18, 'triangle', 0.07, 0.1);
     }
@@ -331,12 +337,17 @@
   }
 
   function select(uf) {
-    if (S.selected) paths[S.selected].classList.remove('selected');
+    if (S.selected && paths[S.selected]) paths[S.selected].classList.remove('selected');
     S.selected = uf;
+    const bComicio = $('act-comicio');
     if (uf) {
       paths[uf].classList.add('selected');
       gStates.appendChild(paths[uf]);
       $('selected-label').textContent = '· ' + DATA.estados[uf].nome;
+      if (bComicio) bComicio.querySelector('.action__txt b').textContent = `Comício (${uf})`;
+    } else {
+      $('selected-label').textContent = '· selecione um estado';
+      if (bComicio) bComicio.querySelector('.action__txt b').textContent = 'Comício';
     }
   }
 
@@ -645,7 +656,84 @@
     }
   }
 
+  /* ---------------- Card de Detalhes do Estado (Mobile e Toque) ---------------- */
+  const stateCard = $('state-card');
+  function showStateCard(uf) {
+    if (!stateCard || !uf) return;
+    const e = DATA.estados[uf];
+    const sw = SWINGS[uf];
+    if (!e) return;
+
+    $('sc-uf').textContent = uf;
+    $('sc-name').textContent = e.nome;
+    $('sc-sub').textContent = `${e.regiao} · ~${fmt(e.eleitores, 1)}M eleitores`;
+
+    const body = $('sc-content');
+    if (S.mode === 'explore') {
+      if (S.turn === 'diff') {
+        const signL = sw.diffL >= 0 ? '+' : '';
+        const signF = sw.diffF >= 0 ? '+' : '';
+        const flipBadge = sw.flipped
+          ? `<span class="sc-badge-flip">⭐ Virou para Lula no 2º Turno!</span>`
+          : '';
+
+        body.innerHTML = `
+          <div class="sc-row sc-row--lula">
+            <span>Lula (${fmt(e.t1.lula)}% ➔ ${fmt(e.t2.lula)}%)</span>
+            <b>${signL}${fmt(sw.diffL)} p.p.</b>
+          </div>
+          <div class="sc-row sc-row--flavio">
+            <span>Flávio (${fmt(e.t1.flavio)}% ➔ ${fmt(e.t2.flavio)}%)</span>
+            <b>${signF}${fmt(sw.diffF)} p.p.</b>
+          </div>
+          <div class="sc-real">Saldo líquido pró-${sw.net >= 0 ? 'Lula' : 'Flávio'}: <b>${fmt(Math.abs(sw.net))} p.p.</b> ${flipBadge}</div>
+        `;
+      } else {
+        const dTurn = e[S.turn];
+        const vencedor = dTurn.vencedor === 'lula' ? 'Lula' : 'Flávio';
+        const turnoLabel = S.turn === 't1' ? '1º Turno' : '2º Turno';
+        const outrosHtml = dTurn.outros > 0
+          ? `<div class="sc-row muted"><span>Outros candidatos</span><span>${fmt(dTurn.outros)}%</span></div>`
+          : '';
+        const mgNote = uf === 'MG'
+          ? (S.turn === 't1' ? '<div class="sc-badge-flip" style="color:var(--flavio)">⭐ MG votou em Flávio no 1º Turno</div>'
+                             : '<div class="sc-badge-flip">⭐ Fiel da Balança: MG virou para Lula no 2ºT!</div>')
+          : '';
+
+        body.innerHTML = `
+          <div class="sc-row sc-row--lula"><span>Lula</span><b>${fmt(dTurn.lula)}%</b></div>
+          <div class="sc-bar">
+            <i style="width:${dTurn.lula}%;background:var(--lula)"></i>
+            ${dTurn.outros > 0 ? `<i style="width:${dTurn.outros}%;background:#8b5cf6"></i>` : ''}
+            <i style="width:${dTurn.flavio}%;background:var(--flavio)"></i>
+          </div>
+          <div class="sc-row sc-row--flavio"><span>Flávio Bolsonaro</span><b>${fmt(dTurn.flavio)}%</b></div>
+          ${outrosHtml}
+          <div class="sc-real">Vencedor oficial: <b>${vencedor}</b> (${turnoLabel})</div>
+          ${mgNote}
+        `;
+      }
+    } else {
+      const l = S.values[uf], f = 100 - l;
+      const refTurn = S.turn === 't1' ? 't1' : 't2';
+      const realL = e[refTurn].lula, realF = e[refTurn].flavio;
+      body.innerHTML = `
+        <div class="sc-row sc-row--lula"><span>Lula</span><b>${fmt(l)}%</b></div>
+        <div class="sc-bar"><i style="width:${l}%;background:var(--lula)"></i><i style="width:${f}%;background:var(--flavio)"></i></div>
+        <div class="sc-row sc-row--flavio"><span>Flávio Bolsonaro</span><b>${fmt(f)}%</b></div>
+        <div class="sc-real">Resultado oficial (${refTurn === 't1' ? '1ºT' : '2ºT'}): Lula ${fmt(realL)}% · Flávio ${fmt(realF)}%</div>
+      `;
+    }
+    stateCard.classList.remove('hidden');
+    $('hint').style.opacity = 0;
+  }
+
+  function hideStateCard() {
+    if (stateCard) stateCard.classList.add('hidden');
+  }
+
   svg.addEventListener('mousemove', (evt) => {
+    if (evt.pointerType === 'touch') return;
     const el = evt.target.closest('[data-uf]');
     if (!el) { hovered = null; tip.classList.remove('on'); return; }
     hovered = el.dataset.uf;
@@ -659,11 +747,48 @@
     tip.classList.add('on');
     $('hint').style.opacity = 0;
   });
-  svg.addEventListener('mouseleave', () => { hovered = null; tip.classList.remove('on'); });
+
+  svg.addEventListener('mouseleave', () => {
+    hovered = null;
+    tip.classList.remove('on');
+  });
+
   svg.addEventListener('pointerdown', (evt) => {
     const el = evt.target.closest('[data-uf]');
-    if (el) { evt.preventDefault(); playerClick(el.dataset.uf, evt); renderTip(); }
+    if (el) {
+      evt.preventDefault();
+      const uf = el.dataset.uf;
+      hovered = uf;
+
+      // Haptic feedback no toque mobile
+      if (navigator.vibrate) {
+        try { navigator.vibrate(14); } catch (_) {}
+      }
+
+      // Desbloqueia WebAudio no primeiro toque
+      if (actx && actx.state === 'suspended') {
+        actx.resume();
+      }
+
+      playerClick(uf, evt);
+      renderTip();
+
+      // No mobile ou no modo explorar, abre o card detalhado do estado
+      if (window.innerWidth <= 768 || S.mode === 'explore') {
+        showStateCard(uf);
+        tip.classList.remove('on');
+      }
+    } else if (S.mode === 'explore') {
+      hideStateCard();
+    }
   });
+
+  if ($('sc-close')) {
+    $('sc-close').addEventListener('click', (e) => {
+      e.stopPropagation();
+      hideStateCard();
+    });
+  }
 
   /* ---------------- Dashboard e Gráficos de Variação ---------------- */
   function renderChartsList() {
@@ -807,6 +932,7 @@
   }
 
   function beginPlay() {
+    hideStateCard();
     UFS.forEach((uf) => { S.values[uf] = NEUTRAL; S.owners[uf] = 'none'; S.dirty.add(uf); });
     S.mode = 'playing'; S.paused = false;
     S.ai = S.side === 'lula' ? 'flavio' : 'lula';
@@ -856,7 +982,13 @@
     });
     if (!flips.children.length) flips.innerHTML = '<li class="muted">Nenhum — mapa idêntico ao oficial!</li>';
     show('overlay-end');
-    if (won) { confetti(); [523, 659, 784, 1046].forEach((fr, i) => beep(fr, 0.2, 'triangle', 0.07, i * 0.12)); }
+    if (won) {
+      if (navigator.vibrate) {
+        try { navigator.vibrate([40, 60, 40, 60, 100]); } catch (_) {}
+      }
+      confetti();
+      [523, 659, 784, 1046].forEach((fr, i) => beep(fr, 0.2, 'triangle', 0.07, i * 0.12));
+    }
     else { [392, 330, 262].forEach((fr, i) => beep(fr, 0.25, 'sine', 0.06, i * 0.15)); }
   }
 
@@ -864,6 +996,7 @@
     countdownTimers.forEach(clearTimeout);
     countdownTimers = [];
     S.mode = 'explore'; S.paused = false;
+    hideStateCard();
     setTurn(S.turn);
     $('you-lula').classList.remove('on'); $('you-flavio').classList.remove('on');
     svg.classList.add('locked');

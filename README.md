@@ -55,6 +55,13 @@ Um jogo e simulador interativo de navegador com o mapa do Brasil estado por esta
   - **Plantão Eleitoral**: Feed de notícias dinâmicas e eventos aleatórios em tempo real.
   - **Efeitos de Som e Vitória**: Efeitos sonoros procedurais via Web Audio API e chuva de confetes na vitória!
 
+### 5. 📱 Experiência Mobile & Responsiva
+- **Design Touch Otimizado**: Interface adaptativa pensada especificamente para smartphones (iOS e Android) e tablets.
+- **Dock de Ações para Polegares**: Botões de ação rápida (Comício, Caravana, Debate) e barra de energia posicionados ao alcance imediato do jogador sem rolagem excessiva.
+- **Card de Detalhes do Estado (Bottom Sheet)**: Toque em qualquer estado no celular para abrir um painel com todos os dados e histórico da eleição.
+- **Feedback Háptico (Vibração)**: Resposta tátil ao clicar nos estados, ativar especiais e virar estados importantes.
+- **Gráficos e Modais Adaptativos**: Visualização em cartões empilhados e scroll suave em qualquer resolução de tela (de 360px a 4K).
+
 ---
 
 ## 🚀 Como Executar Localmente
