@@ -76,6 +76,7 @@
 
   const S = {
     turn: 't2', // 't1', 't2' ou 'diff'
+    gameRound: 't2', // 't1' ou 't2' para a partida
     mode: 'explore', // 'explore', 'countdown', 'playing', 'ended'
     paused: false,
     side: null,
@@ -105,12 +106,15 @@
 
   function setTurn(turn) {
     S.turn = turn;
+    if (turn === 't1' || turn === 't2') {
+      S.gameRound = turn;
+    }
     $('btn-t1').classList.toggle('active', turn === 't1');
     $('btn-t2').classList.toggle('active', turn === 't2');
     $('btn-diff').classList.toggle('active', turn === 'diff');
 
-    if ($('round-t1')) $('round-t1').classList.toggle('chip--on', turn === 't1');
-    if ($('round-t2')) $('round-t2').classList.toggle('chip--on', turn === 't2');
+    if ($('round-t1')) $('round-t1').classList.toggle('chip--on', S.gameRound === 't1');
+    if ($('round-t2')) $('round-t2').classList.toggle('chip--on', S.gameRound === 't2');
 
     // Atualiza legenda do mapa
     const lgLula = document.querySelector('.lg--lula');
@@ -165,7 +169,7 @@
     const [x, y] = merc(p);
     minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y);
   }
-  const BOX = { x0: 20, y0: 20, x1: 860, y1: 980 };
+  const BOX = { x0: 14, y0: 16, x1: 886, y1: 984 };
   const scale = Math.min((BOX.x1 - BOX.x0) / (maxX - minX), (BOX.y1 - BOX.y0) / (maxY - minY));
   const offX = BOX.x0 + ((BOX.x1 - BOX.x0) - (maxX - minX) * scale) / 2;
   const offY = BOX.y0 + ((BOX.y1 - BOX.y0) - (maxY - minY) * scale) / 2;
@@ -206,38 +210,49 @@
     paths[uf] = path;
   }
 
-  const coastX = Math.max(...['RN', 'PB', 'PE', 'AL', 'SE'].map((uf) => centers[uf].x)) + 70;
+  const coastX = Math.max(...['RN', 'PB', 'PE', 'AL', 'SE'].map((uf) => centers[uf].x)) + 74;
   const LABEL_POS = {
-    RN: { x: coastX, y: centers.RN.y - 22 },
-    PB: { x: coastX, y: centers.PB.y + 2 },
-    PE: { x: coastX, y: centers.PE.y + 28 },
-    AL: { x: coastX, y: centers.AL.y + 50 },
-    SE: { x: coastX, y: centers.SE.y + 74 },
-    ES: { x: centers.ES.x + 62, y: centers.ES.y + 6 },
-    RJ: { x: centers.RJ.x + 70, y: centers.RJ.y + 40 },
-    DF: { x: centers.DF.x + 58, y: centers.DF.y - 34 },
-    GO: { x: centers.GO.x - 20, y: centers.GO.y + 22 },
+    RN: { x: coastX, y: centers.RN.y - 34 },
+    PB: { x: coastX, y: centers.PB.y - 2 },
+    PE: { x: coastX, y: centers.PE.y + 32 },
+    AL: { x: coastX, y: centers.AL.y + 62 },
+    SE: { x: coastX, y: centers.SE.y + 92 },
+    ES: { x: centers.ES.x + 68, y: centers.ES.y + 8 },
+    RJ: { x: centers.RJ.x + 74, y: centers.RJ.y + 44 },
+    DF: { x: centers.DF.x + 12, y: centers.DF.y - 40 },
+    GO: { x: centers.GO.x - 22, y: centers.GO.y + 24 },
   };
   const LEADERS = ['RN', 'PB', 'PE', 'AL', 'SE', 'ES', 'RJ', 'DF'];
   for (const uf of UFS) {
     const c = centers[uf];
     const pos = LABEL_POS[uf] || { x: c.x, y: c.y };
-    if (LEADERS.includes(uf)) {
+    const isLeader = LEADERS.includes(uf);
+    if (isLeader) {
       const line = document.createElementNS(SVGNS, 'path');
       line.setAttribute('class', 'leader');
-      line.setAttribute('d', `M${c.x},${c.y}L${pos.x - 20},${pos.y}`);
+      const endX = uf === 'DF' ? pos.x : pos.x - 28;
+      const endY = uf === 'DF' ? pos.y + 20 : pos.y;
+      line.setAttribute('d', `M${c.x},${c.y}L${endX},${endY}`);
       gLabels.appendChild(line);
     }
+    const hit = document.createElementNS(SVGNS, 'rect');
+    hit.setAttribute('class', isLeader ? 'label-pill' : 'label-hit');
+    hit.setAttribute('x', pos.x - (isLeader ? 29 : 28));
+    hit.setAttribute('y', pos.y - (isLeader ? 20 : 21));
+    hit.setAttribute('width', isLeader ? 58 : 56);
+    hit.setAttribute('height', isLeader ? 40 : 42);
+    hit.setAttribute('rx', 8);
+    hit.dataset.uf = uf;
     const t = document.createElementNS(SVGNS, 'text');
     t.setAttribute('class', 'label');
-    t.setAttribute('x', pos.x); t.setAttribute('y', pos.y - 6);
+    t.setAttribute('x', pos.x); t.setAttribute('y', pos.y - 7.5);
     t.dataset.uf = uf;
     t.textContent = uf;
     const p = document.createElementNS(SVGNS, 'text');
     p.setAttribute('class', 'label label--pct');
-    p.setAttribute('x', pos.x); p.setAttribute('y', pos.y + 9);
+    p.setAttribute('x', pos.x); p.setAttribute('y', pos.y + 10.5);
     p.dataset.uf = uf;
-    gLabels.append(t, p);
+    gLabels.append(hit, t, p);
     labels[uf] = p;
     centers[uf].lx = pos.x; centers[uf].ly = pos.y;
   }
@@ -281,6 +296,7 @@
       S.owners[uf] = owner;
       flipFx(uf, owner, prev);
     }
+    if (uf === S.selected) updateSelectedLabel();
   }
 
   const TOTAL_W = UFS.reduce((s, uf) => s + DATA.estados[uf].eleitores, 0);
@@ -336,19 +352,32 @@
     return pt.matrixTransform(svg.getScreenCTM().inverse());
   }
 
-  function select(uf) {
-    if (S.selected && paths[S.selected]) paths[S.selected].classList.remove('selected');
-    S.selected = uf;
+  function updateSelectedLabel() {
+    const uf = S.selected;
     const bComicio = $('act-comicio');
     if (uf) {
-      paths[uf].classList.add('selected');
-      gStates.appendChild(paths[uf]);
-      $('selected-label').textContent = '· ' + DATA.estados[uf].nome;
+      if (S.mode === 'playing') {
+        const l = S.values[uf];
+        const myPct = S.side === 'flavio' ? 100 - l : l;
+        $('selected-label').textContent = `· ${DATA.estados[uf].nome} (${fmt(myPct, 0)}%)`;
+      } else {
+        $('selected-label').textContent = '· ' + DATA.estados[uf].nome;
+      }
       if (bComicio) bComicio.querySelector('.action__txt b').textContent = `Comício (${uf})`;
     } else {
       $('selected-label').textContent = '· selecione um estado';
       if (bComicio) bComicio.querySelector('.action__txt b').textContent = 'Comício';
     }
+  }
+
+  function select(uf) {
+    if (S.selected && paths[S.selected]) paths[S.selected].classList.remove('selected');
+    S.selected = uf;
+    if (uf) {
+      paths[uf].classList.add('selected');
+      gStates.appendChild(paths[uf]);
+    }
+    updateSelectedLabel();
   }
 
   function playerClick(uf, evt) {
@@ -726,10 +755,33 @@
     }
     stateCard.classList.remove('hidden');
     $('hint').style.opacity = 0;
+    $('hint').classList.add('is-dismissed');
   }
 
   function hideStateCard() {
     if (stateCard) stateCard.classList.add('hidden');
+  }
+
+  function findNearestUf(evt) {
+    const el = evt.target.closest('[data-uf]');
+    if (el) return el.dataset.uf;
+    try {
+      const pt = svgPoint(evt);
+      let bestUf = null, bestDist = 36;
+      for (const uf of UFS) {
+        const c = centers[uf];
+        const d1 = Math.hypot(pt.x - c.x, pt.y - c.y);
+        const d2 = Math.hypot(pt.x - c.lx, pt.y - c.ly);
+        const d = Math.min(d1, d2);
+        if (d < bestDist) {
+          bestDist = d;
+          bestUf = uf;
+        }
+      }
+      return bestUf;
+    } catch (_) {
+      return null;
+    }
   }
 
   svg.addEventListener('mousemove', (evt) => {
@@ -754,10 +806,9 @@
   });
 
   svg.addEventListener('pointerdown', (evt) => {
-    const el = evt.target.closest('[data-uf]');
-    if (el) {
+    const uf = findNearestUf(evt);
+    if (uf) {
       evt.preventDefault();
-      const uf = el.dataset.uf;
       hovered = uf;
 
       // Haptic feedback no toque mobile
@@ -773,8 +824,8 @@
       playerClick(uf, evt);
       renderTip();
 
-      // No mobile ou no modo explorar, abre o card detalhado do estado
-      if (window.innerWidth <= 768 || S.mode === 'explore') {
+      // Apenas no modo explorar (em telas mobile/tablet ou toque), abre o card detalhado
+      if (S.mode === 'explore' && (window.innerWidth <= 1000 || evt.pointerType === 'touch')) {
         showStateCard(uf);
         tip.classList.remove('on');
       }
@@ -904,8 +955,12 @@
   function startGame() {
     countdownTimers.forEach(clearTimeout);
     countdownTimers = [];
+    hideStateCard();
+    if (S.turn === 'diff') setTurn(S.gameRound || 't2');
+    else setTurn(S.turn);
     S.mode = 'countdown'; S.paused = false;
     S.countdownText = '3';
+    document.body.classList.add('is-playing');
 
     // Efeito cascata: zerando todos os estados para NEUTRO
     const order = [...UFS].sort((a, b) => centers[a].y - centers[b].y);
@@ -933,6 +988,7 @@
 
   function beginPlay() {
     hideStateCard();
+    document.body.classList.add('is-playing');
     UFS.forEach((uf) => { S.values[uf] = NEUTRAL; S.owners[uf] = 'none'; S.dirty.add(uf); });
     S.mode = 'playing'; S.paused = false;
     S.ai = S.side === 'lula' ? 'flavio' : 'lula';
@@ -940,12 +996,14 @@
     S.combo = 0; S.cd = { comicio: 0, caravana: 0, debate: 0 }; S.aiCd = { comicio: 4, caravana: 8, debate: 15 };
     S.aiTarget = null; S.aiClick = 1.2; S.nextEvent = rand(8, 12);
     svg.classList.remove('locked');
+    updateSelectedLabel();
     log(`🏁 Campanha iniciada! Conquiste os estados antes do fim do tempo (${GAME_TIME}s).`, 'gold');
     beep(523, 0.1, 'triangle', 0.06); beep(659, 0.1, 'triangle', 0.06, 0.1); beep(784, 0.2, 'triangle', 0.06, 0.2);
   }
 
   function endGame() {
     S.mode = 'ended';
+    document.body.classList.remove('is-playing');
     svg.classList.add('locked');
     const l = national(), f = 100 - l;
     const winner = l >= 50 ? 'lula' : 'flavio';
@@ -996,8 +1054,10 @@
     countdownTimers.forEach(clearTimeout);
     countdownTimers = [];
     S.mode = 'explore'; S.paused = false;
+    document.body.classList.remove('is-playing');
     hideStateCard();
     setTurn(S.turn);
+    updateSelectedLabel();
     $('you-lula').classList.remove('on'); $('you-flavio').classList.remove('on');
     svg.classList.add('locked');
     hide('overlay-start'); hide('overlay-end');
@@ -1055,9 +1115,21 @@
   $('pick-flavio').addEventListener('click', () => choose('flavio'));
 
   // Seletor de turno no topo
-  $('btn-t1').addEventListener('click', () => setTurn('t1'));
-  $('btn-t2').addEventListener('click', () => setTurn('t2'));
-  $('btn-diff').addEventListener('click', () => setTurn('diff'));
+  $('btn-t1').addEventListener('click', () => {
+    if (S.mode === 'playing' || S.mode === 'countdown') return;
+    if (S.mode === 'ended') { S.turn = 't1'; exploreReal(); return; }
+    setTurn('t1');
+  });
+  $('btn-t2').addEventListener('click', () => {
+    if (S.mode === 'playing' || S.mode === 'countdown') return;
+    if (S.mode === 'ended') { S.turn = 't2'; exploreReal(); return; }
+    setTurn('t2');
+  });
+  $('btn-diff').addEventListener('click', () => {
+    if (S.mode === 'playing' || S.mode === 'countdown') return;
+    if (S.mode === 'ended') { S.turn = 'diff'; exploreReal(); return; }
+    setTurn('diff');
+  });
 
   // Botão abrir gráficos
   $('btn-open-charts').addEventListener('click', openChartsModal);

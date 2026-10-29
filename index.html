@@ -43,7 +43,7 @@
       <div class="cand__info">
         <span class="cand__name">Lula <small>PT</small></span>
         <span class="cand__pct" id="pct-lula">51,79%</span>
-        <span class="cand__states"><b id="states-lula">13</b> estados</span>
+        <span class="cand__states" id="states-lula"><b>13</b> estados</span>
       </div>
       <span class="cand__you" id="you-lula">VOCÊ</span>
     </div>
@@ -62,9 +62,9 @@
     <div class="cand cand--flavio" id="card-flavio">
       <span class="cand__you" id="you-flavio">VOCÊ</span>
       <div class="cand__info cand__info--right">
-        <span class="cand__name">Flávio Bolsonaro <small>PL</small></span>
+        <span class="cand__name"><span class="name-full">Flávio Bolsonaro</span><span class="name-short">Flávio B.</span> <small>PL</small></span>
         <span class="cand__pct" id="pct-flavio">48,21%</span>
-        <span class="cand__states"><b id="states-flavio">14</b> estados</span>
+        <span class="cand__states" id="states-flavio"><b>14</b> estados</span>
       </div>
       <div class="cand__avatar">F</div>
     </div>
@@ -72,7 +72,7 @@
 
   <main class="layout">
     <section class="map-card glass" aria-label="Mapa do Brasil">
-      <svg id="map" viewBox="0 0 1000 1000" role="img" aria-label="Mapa do Brasil por estado"></svg>
+      <svg id="map" viewBox="6 32 954 936" role="img" aria-label="Mapa do Brasil por estado"></svg>
       <div class="map-legend">
         <span class="lg lg--lula">Lula forte</span>
         <div class="lg-scale"></div>
@@ -97,13 +97,13 @@
     </section>
 
     <aside class="panel">
-      <div class="glass panel__box">
+      <div class="glass panel__box panel__box--energy">
         <div class="panel__row">
           <h2>Capital político</h2>
           <span class="combo" id="combo"></span>
         </div>
         <div class="energy"><div class="energy__fill" id="energy-fill"></div><span id="energy-text">100</span></div>
-        <p class="muted small">Clique nos estados para puxar votos. Estados menores viram mais rápido; os grandes valem mais.</p>
+        <p class="muted small panel__hint">Toque ou clique nos estados para puxar votos. Estados menores viram mais rápido; os grandes valem mais.</p>
       </div>
 
       <div class="glass panel__box">
@@ -143,7 +143,7 @@
     <div class="modal glass">
       <p class="eyebrow">Jogo de estratégia relâmpago</p>
       <h2 class="modal__title">Quem leva o Brasil?</h2>
-      <p class="muted">Escolha seu lado. Ao começar, <b>todos os estados são zerados</b> e ficam neutros (cinza). Clique para conquistar estado por estado e dispute o Brasil contra a IA adversária. No fim, compare seu mapa com o resultado real de 2026.</p>
+      <p class="muted">Escolha seu lado. Ao começar, <b>todos os estados são zerados</b> e ficam neutros (cinza). Toque ou clique para conquistar estado por estado e dispute o Brasil contra a IA adversária. No fim, compare seu mapa com o resultado real de 2026.</p>
 
       <div class="pick">
         <button class="pick__btn pick__btn--lula" id="pick-lula">
