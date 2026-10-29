@@ -5,6 +5,10 @@ Um jogo e simulador interativo de navegador com o mapa do Brasil estado por esta
 ![Visual do Jogo](https://img.shields.io/badge/Status-Concluído-success)
 ![Linguagens](https://img.shields.io/badge/Tech-HTML5%20%7C%20CSS3%20%7C%20JavaScript-blue)
 ![Licença](https://img.shields.io/badge/License-MIT-green)
+[![Jogue Online](https://img.shields.io/badge/Jogue%20Online-GitHub%20Pages-brightgreen)](https://rikelmi12.github.io/cabo-de-guerra-eleitoral-2026/)
+
+> 🎮 **Link do Jogo Online (GitHub Pages):**  
+> **[https://rikelmi12.github.io/cabo-de-guerra-eleitoral-2026/](https://rikelmi12.github.io/cabo-de-guerra-eleitoral-2026/)**
 
 ---
 
