@@ -1,0 +1,16 @@
+# Dependências e caches
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos pesados de pré-processamento
+tools/br.geojson
+
+# Arquivos temporários do SO e editor
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+.vscode/
+.idea/

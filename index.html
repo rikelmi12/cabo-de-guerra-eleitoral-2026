@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cabo de Guerra Eleitoral 2026 — Lula x Flávio Bolsonaro</title>
+  <meta name="description" content="Jogo de navegador: dispute estado por estado o mapa do Brasil entre Lula e Flávio Bolsonaro, partindo do resultado real do 2º turno de 2026." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-glow bg-glow--red"></div>
+  <div class="bg-glow bg-glow--green"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__logo">🗳️</span>
+      <div>
+        <h1>Cabo de Guerra Eleitoral <span class="accent">2026</span></h1>
+        <p class="brand__sub" id="mode-label">Resultado oficial do 2º turno · 25/10/2026</p>
+      </div>
+    </div>
+    <div class="topbar__actions">
+      <div class="turn-switcher" id="turn-switcher">
+        <button class="turn-btn" id="btn-t1" data-turn="t1">1º Turno (04/10)</button>
+        <button class="turn-btn active" id="btn-t2" data-turn="t2">2º Turno (25/10)</button>
+        <button class="turn-btn" id="btn-diff" data-turn="diff">📊 Variação (1º ➔ 2º)</button>
+      </div>
+      <button class="btn btn--primary" id="btn-open-charts" style="display:flex;align-items:center;gap:6px;">📈 Gráficos</button>
+      <button class="icon-btn" id="btn-sound" title="Som">🔊</button>
+      <button class="btn btn--ghost" id="btn-menu">Menu</button>
+    </div>
+  </header>
+
+  <section class="scoreboard" aria-label="Placar nacional">
+    <div class="cand cand--lula" id="card-lula">
+      <div class="cand__avatar">L</div>
+      <div class="cand__info">
+        <span class="cand__name">Lula <small>PT</small></span>
+        <span class="cand__pct" id="pct-lula">51,79%</span>
+        <span class="cand__states"><b id="states-lula">13</b> estados</span>
+      </div>
+      <span class="cand__you" id="you-lula">VOCÊ</span>
+    </div>
+
+    <div class="tug">
+      <div class="tug__timer" id="timer">—</div>
+      <div class="tug__bar">
+        <div class="tug__fill tug__fill--lula" id="tug-lula"></div>
+        <div class="tug__fill tug__fill--flavio" id="tug-flavio"></div>
+        <div class="tug__mid"></div>
+        <div class="tug__knot" id="tug-knot"></div>
+      </div>
+      <div class="tug__legend"><span>Vermelho = Lula</span><span>50%</span><span>Verde = Flávio</span></div>
+    </div>
+
+    <div class="cand cand--flavio" id="card-flavio">
+      <span class="cand__you" id="you-flavio">VOCÊ</span>
+      <div class="cand__info cand__info--right">
+        <span class="cand__name">Flávio Bolsonaro <small>PL</small></span>
+        <span class="cand__pct" id="pct-flavio">48,21%</span>
+        <span class="cand__states"><b id="states-flavio">14</b> estados</span>
+      </div>
+      <div class="cand__avatar">F</div>
+    </div>
+  </section>
+
+  <main class="layout">
+    <section class="map-card glass" aria-label="Mapa do Brasil">
+      <svg id="map" viewBox="0 0 1000 1000" role="img" aria-label="Mapa do Brasil por estado"></svg>
+      <div class="map-legend">
+        <span class="lg lg--lula">Lula forte</span>
+        <div class="lg-scale"></div>
+        <span class="lg lg--flavio">Flávio forte</span>
+      </div>
+      <div class="hint" id="hint">Passe o mouse sobre um estado para ver os números</div>
+    </section>
+
+    <aside class="panel">
+      <div class="glass panel__box">
+        <div class="panel__row">
+          <h2>Capital político</h2>
+          <span class="combo" id="combo"></span>
+        </div>
+        <div class="energy"><div class="energy__fill" id="energy-fill"></div><span id="energy-text">100</span></div>
+        <p class="muted small">Clique nos estados para puxar votos. Estados pequenos mudam mais rápido; os grandes valem mais.</p>
+      </div>
+
+      <div class="glass panel__box">
+        <h2>Ações especiais <span class="muted small" id="selected-label">· selecione um estado</span></h2>
+        <div class="actions">
+          <button class="action" id="act-comicio" data-key="1">
+            <span class="action__icon">📣</span>
+            <span class="action__txt"><b>Comício</b><small>Grande impulso no estado · 30</small></span>
+            <kbd>1</kbd><span class="action__cd"></span>
+          </button>
+          <button class="action" id="act-caravana" data-key="2">
+            <span class="action__icon">🚌</span>
+            <span class="action__txt"><b>Caravana</b><small>Toda a região do estado · 50</small></span>
+            <kbd>2</kbd><span class="action__cd"></span>
+          </button>
+          <button class="action" id="act-debate" data-key="3">
+            <span class="action__icon">📺</span>
+            <span class="action__txt"><b>Debate na TV</b><small>Todos os estados · 80</small></span>
+            <kbd>3</kbd><span class="action__cd"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="glass panel__box panel__box--feed">
+        <h2>Plantão eleitoral</h2>
+        <ul class="feed" id="feed">
+          <li class="feed__item">Mapa carregado com o resultado oficial de 25/10/2026.</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <div class="tooltip" id="tooltip" role="tooltip"></div>
+
+  <!-- Tela inicial -->
+  <div class="overlay" id="overlay-start">
+    <div class="modal glass">
+      <p class="eyebrow">Jogo de estratégia relâmpago</p>
+      <h2 class="modal__title">Quem leva o Brasil?</h2>
+      <p class="muted">Escolha seu lado. Ao começar, <b>todos os estados são zerados</b> e ficam neutros (cinza). Clique para conquistar estado por estado e dispute o Brasil contra a IA adversária. No fim, compare seu mapa com o resultado real de 2026.</p>
+
+      <div class="pick">
+        <button class="pick__btn pick__btn--lula" id="pick-lula">
+          <span class="pick__avatar">L</span><b>Lula</b><small>Vermelho · começa do zero</small>
+        </button>
+        <button class="pick__btn pick__btn--flavio" id="pick-flavio">
+          <span class="pick__avatar">F</span><b>Flávio Bolsonaro</b><small>Verde · começa do zero</small>
+        </button>
+      </div>
+
+      <div class="diff" role="radiogroup" aria-label="Turno da disputa">
+        <span class="muted small">Turno da eleição:</span>
+        <button class="chip" data-round="t1" id="round-t1">1º Turno (04/10)</button>
+        <button class="chip chip--on" data-round="t2" id="round-t2">2º Turno (25/10 - Final)</button>
+      </div>
+
+      <div class="diff" role="radiogroup" aria-label="Dificuldade">
+        <span class="muted small">Dificuldade da IA:</span>
+        <button class="chip" data-diff="facil" id="diff-facil">Fácil</button>
+        <button class="chip chip--on" data-diff="normal" id="diff-normal">Normal</button>
+        <button class="chip" data-diff="dificil" id="diff-dificil">Difícil</button>
+      </div>
+
+      <button class="btn btn--primary btn--big" id="btn-start" disabled>Escolha um lado</button>
+      <button class="btn btn--ghost" id="btn-explore">Só explorar o mapa real</button>
+      <p class="disclaimer">Jogo de ficção para entretenimento. Os eventos da partida são inventados; o modo “explorar” mostra o resultado real do 2º turno de 2026.</p>
+    </div>
+  </div>
+
+  <!-- Tela final -->
+  <div class="overlay hidden" id="overlay-end">
+    <div class="modal glass">
+      <p class="eyebrow" id="end-eyebrow">Fim da campanha</p>
+      <h2 class="modal__title" id="end-title">—</h2>
+      <div class="end-stats">
+        <div class="end-stat end-stat--lula"><span>Lula</span><b id="end-lula">—</b><small id="end-lula-st">—</small></div>
+        <div class="end-stat end-stat--flavio"><span>Flávio</span><b id="end-flavio">—</b><small id="end-flavio-st">—</small></div>
+      </div>
+      <p class="muted" id="end-compare">—</p>
+      <ul class="end-flips" id="end-flips"></ul>
+      <button class="btn btn--primary btn--big" id="btn-again">Jogar de novo</button>
+      <button class="btn btn--ghost" id="btn-reset-real">Voltar ao mapa real</button>
+    </div>
+  </div>
+
+  <!-- Modal de Gráficos de Variação (1ºT para 2ºT) -->
+  <div class="overlay hidden" id="overlay-charts">
+    <div class="modal glass modal--large">
+      <div class="modal__header">
+        <div>
+          <p class="eyebrow">Análise Comparativa Oficial 2026</p>
+          <h2 class="modal__title" style="font-size:1.6rem">Ganhos e Perdas: 1º ➔ 2º Turno</h2>
+          <p class="muted small">Variação de percentual (pontos percentuais) e migração de votos entre os turnos</p>
+        </div>
+        <button class="close-btn" id="btn-close-charts" title="Fechar">✕</button>
+      </div>
+
+      <!-- Cards de métricas -->
+      <div class="metrics-grid">
+        <div class="m-card m-card--lula">
+          <span class="m-card__label">Ganho Médio Nacional Lula</span>
+          <b class="m-card__val">+6,63 p.p.</b>
+          <span class="m-card__sub">45,16% ➔ 51,79% (+10,38M votos)</span>
+        </div>
+        <div class="m-card m-card--flavio">
+          <span class="m-card__label">Ganho Médio Nacional Flávio</span>
+          <b class="m-card__val">+1,18 p.p.</b>
+          <span class="m-card__sub">47,03% ➔ 48,21% (+3,72M votos)</span>
+        </div>
+        <div class="m-card m-card--gold">
+          <span class="m-card__label">Absorção de Terceiros (7,81%)</span>
+          <b class="m-card__val">84,9% Lula</b>
+          <span class="m-card__sub">15,1% foram para Flávio</span>
+        </div>
+        <div class="m-card m-card--blue">
+          <span class="m-card__label">Fiel da Balança (Virada)</span>
+          <b class="m-card__val">Minas Gerais</b>
+          <span class="m-card__sub">Lula cresceu +7,07 p.p. e virou o estado</span>
+        </div>
+      </div>
+
+      <!-- Abas dos gráficos -->
+      <div class="charts-tabs">
+        <button class="tab-btn active" id="tab-ranking">Ranking por Estados (27 UFs)</button>
+        <button class="tab-btn" id="tab-regions">Médias por Região</button>
+      </div>
+
+      <!-- Controles do ranking -->
+      <div id="ranking-section">
+        <div class="chart-controls">
+          <div class="chart-filters" id="chart-region-filters">
+            <button class="chip chip--on" data-filter="todos">Todos (27)</button>
+            <button class="chip" data-filter="Sudeste">Sudeste</button>
+            <button class="chip" data-filter="Nordeste">Nordeste</button>
+            <button class="chip" data-filter="Sul">Sul</button>
+            <button class="chip" data-filter="Norte">Norte</button>
+            <button class="chip" data-filter="Centro-Oeste">Centro-Oeste</button>
+          </div>
+          <div class="chart-sort">
+            <span class="muted">Ordenar:</span>
+            <select class="sort-select" id="chart-sort-select">
+              <option value="swingLula">Maior Ganho Lula</option>
+              <option value="swingFlavio">Maior Ganho Flávio</option>
+              <option value="netSwing">Maior Virada Líquida</option>
+              <option value="name">Alfabética (A-Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Lista de barras dos 27 estados -->
+        <div class="chart-list" id="chart-list-items"></div>
+      </div>
+
+      <!-- Seção regional -->
+      <div class="hidden" id="regions-section">
+        <div class="region-grid" id="region-grid-items"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/geo.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
